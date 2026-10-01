@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>bChat Protocol: token-gated chat rooms on BSV</title>
+<meta name="description" content="Every token already has a room. An open protocol for token-gated chat on BSV: room id = token id, holding = membership, invite = send a token.">
+<meta name="theme-color" content="#050505" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f7f8fa" media="(prefers-color-scheme: light)">
+<meta name="color-scheme" content="dark light">
+<meta property="og:type" content="website">
+<meta property="og:title" content="bChat Protocol: every token already has a room">
+<meta property="og:description" content="Token-gated chat rooms on BSV. Room id = token id, holding = membership, invite = send a token. Built on bSocial and Bitcoin Schema.">
+<meta property="og:url" content="https://bitcoin-corp.github.io/bchat-protocol/">
+<meta property="og:image" content="https://bitcoin-corp.github.io/bchat-protocol/assets/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="assets/bchat-icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="assets/bchat-apple-touch-icon.png">
+<link rel="preload" href="assets/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+@font-face{font-family:Inter;font-weight:100 900;font-display:swap;src:url(assets/inter-latin.woff2) format("woff2")}
+@font-face{font-family:"Geist Mono";font-weight:100 900;font-display:swap;src:url(assets/geist-mono-latin.woff2) format("woff2")}
+:root{
+  --bg:#050505;--surface:#0e0e10;--line:rgba(255,255,255,.08);--fg:#f4f4f5;--muted:#a1a1aa;
+  --accent:#a78bfa;--accent-strong:#7c3aed;--glow:rgba(124,58,237,.16);--code-bg:#0b0b0d;
+  --sans:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --mono:"Geist Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: light){:root{
+  --bg:#f7f8fa;--surface:#fff;--line:rgba(0,0,0,.09);--fg:#0a0a0b;--muted:#52525b;
+  --accent:#6d28d9;--accent-strong:#6d28d9;--glow:rgba(124,58,237,.10);--code-bg:#f1f0f5;
+}}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.6 var(--sans);overflow-x:hidden}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:6px}
+.skip{position:absolute;left:-999px;top:8px;background:var(--fg);color:var(--bg);padding:8px 12px;border-radius:8px;z-index:10}
+.skip:focus{left:16px}
+.wrap{max-width:1080px;margin:0 auto;padding:0 16px}
+@media (min-width:640px){.wrap{padding:0 24px}}
+nav{position:sticky;top:0;z-index:5;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+nav .wrap{display:flex;align-items:center;justify-content:space-between;height:56px;gap:12px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;font-weight:650;letter-spacing:-.01em}
+.brand svg{width:26px;height:26px}
+.brand small{font:500 12px var(--mono);color:var(--muted)}
+nav ul{display:flex;gap:18px;list-style:none;margin:0;padding:0;font-size:14px;color:var(--muted)}
+nav ul a{text-decoration:none}nav ul a:hover{color:var(--fg)}
+@media (max-width:560px){nav ul li.opt{display:none}}
+.eyebrow{font:500 12px/1.4 var(--mono);color:var(--accent);letter-spacing:.04em;text-transform:uppercase;margin:0 0 14px}
+section{padding:72px 0;border-bottom:1px solid var(--line)}
+h1,h2,h3{letter-spacing:-.025em;line-height:1.1;margin:0}
+h2{font-size:clamp(28px,4.4vw,40px);font-weight:650;margin-bottom:14px}
+h3{font-size:18px;font-weight:600;letter-spacing:-.01em;margin-bottom:8px}
+.lede{color:var(--muted);font-size:17px;max-width:640px;margin:0}
+.hero{position:relative;padding:96px 0 88px;overflow:hidden}
+.hero:before{content:"";position:absolute;left:50%;top:30%;width:42rem;height:42rem;max-width:140vw;transform:translate(-50%,-50%);background:radial-gradient(circle,var(--glow),transparent 65%);pointer-events:none}
+.hero .wrap{position:relative}
+.hero img{width:72px;height:72px;border-radius:18px;display:block;margin-bottom:28px}
+.hero h1{font-size:clamp(38px,7.6vw,76px);font-weight:700;max-width:14ch;margin-bottom:24px}
+.facts{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 32px;padding:0;list-style:none}
+.facts li{font:500 14px var(--mono);border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 14px}
+.facts b{color:var(--accent);font-weight:500}
+.ctas{display:flex;flex-wrap:wrap;gap:10px}
+.btn{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 18px;border-radius:10px;font-weight:600;font-size:15px;text-decoration:none;border:1px solid var(--line);background:var(--surface)}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.btn.primary:hover{opacity:.9}
+.grid{display:grid;gap:16px;margin-top:36px}
+@media (min-width:760px){.g3{grid-template-columns:repeat(3,1fr)}.g2{grid-template-columns:repeat(2,1fr)}}
+.card{border:1px solid var(--line);background:var(--surface);border-radius:14px;padding:22px}
+.card p{margin:0;color:var(--muted);font-size:15px}
+.num{font:500 13px var(--mono);color:var(--accent);display:block;margin-bottom:12px}
+code{font-family:var(--mono);font-size:.9em}
+p code,li code,td code{background:var(--code-bg);border:1px solid var(--line);border-radius:5px;padding:1px 5px;overflow-wrap:anywhere}
+pre{background:var(--code-bg);border:1px solid var(--line);border-radius:14px;padding:20px;overflow-x:auto;font:13.5px/1.65 var(--mono);margin:28px 0 0}
+pre .c{color:var(--muted)}pre .k{color:var(--accent)}
+table{width:100%;border-collapse:collapse;font-size:15px}
+th,td{text-align:left;padding:12px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font:500 12px var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.tablewrap{overflow-x:auto;margin-top:28px;border:1px solid var(--line);border-radius:14px;background:var(--surface)}
+ul.plain{margin:12px 0 0;padding-left:18px;color:var(--muted);font-size:15px}
+ul.plain li{margin:6px 0}
+.tag{display:inline-block;font:500 11px var(--mono);text-transform:uppercase;letter-spacing:.05em;padding:3px 8px;border-radius:6px;border:1px solid var(--line);color:var(--accent);margin-bottom:12px}
+.note{margin-top:20px;color:var(--muted);font-size:14px}
+.final{text-align:left}
+footer{padding:36px 0 48px;color:var(--muted);font-size:14px}
+footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px}
+footer a{color:var(--muted)}
+@media (prefers-reduced-motion:no-preference){.btn{transition:border-color .15s,opacity .15s}}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<nav aria-label="Primary">
+  <div class="wrap">
+    <a class="brand" href="./" aria-label="bChat Protocol home">
+      <svg viewBox="0 0 120 120" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M45 12 L45 76 L27 76 L27 30 Z M60 39 a33 33 0 1 1 0 66 a33 33 0 1 1 0 -66 Z M60 57 a15 15 0 1 0 0 30 a15 15 0 1 0 0 -30 Z"/></svg>
+      <span>bChat Protocol</span><small>Draft 0.2</small>
+    </a>
+    <ul>
+      <li class="opt"><a href="#how">How it works</a></li>
+      <li class="opt"><a href="#roadmap">Roadmap</a></li>
+      <li><a href="https://github.com/bitcoin-corp/bchat-protocol/blob/main/SPEC.md">Spec</a></li>
+    </ul>
+  </div>
+</nav>
+
+<main id="main">
+<header class="hero">
+  <div class="wrap">
+    <img src="assets/bchat-apple-touch-icon.png" alt="" width="72" height="72">
+    <p class="eyebrow">Open protocol · token-gated chat on BSV</p>
+    <h1>Every token already has a room.</h1>
+    <ul class="facts" aria-label="The protocol in three lines">
+      <li>room id <b>=</b> token id</li>
+      <li>holding <b>=</b> membership</li>
+      <li>invite <b>=</b> send a token</li>
+    </ul>
+    <div class="ctas">
+      <a class="btn primary" href="https://github.com/bitcoin-corp/bchat-protocol/blob/main/SPEC.md">Read the spec</a>
+      <a class="btn" href="https://github.com/bitcoin-corp/bchat-protocol/issues/new">Open an issue</a>
+      <a class="btn" href="https://www.bitcoinchat.online">Try bChat</a>
+    </div>
+  </div>
+</header>
+
+<section id="how" aria-labelledby="how-h">
+  <div class="wrap">
+    <p class="eyebrow">How it works</p>
+    <h2 id="how-h">Three steps. No new prefix.</h2>
+    <p class="lede">A room message is an ordinary Bitcoin Schema chat message whose <code>channel</code> is the token's id. Gating is a rule clients apply on top, not a new encoding.</p>
+    <div class="grid g3">
+      <div class="card"><span class="num">01</span><h3>Pick a token</h3><p>Any BSV-21 token, BSV-20 tick or 1Sat collection. Its room id is <code>bsv21:&lt;txid&gt;_&lt;vout&gt;</code>, <code>bsv20:&lt;TICK&gt;</code> or <code>coll:&lt;txid&gt;_&lt;vout&gt;</code>. Sub-rooms add <code>/&lt;slug&gt;</code>.</p></div>
+      <div class="card"><span class="num">02</span><h3>Post a signed message</h3><p>B + MAP + AIP, with <code>type message</code>, <code>context channel</code> and the room id as <code>channel</code>. It lands on chain like any other Bitcoin Schema message.</p></div>
+      <div class="card"><span class="num">03</span><h3>Holders are admitted</h3><p>A message counts if its signer held at least <code>min</code> of the token when it was posted and isn't banned. Selling later never revokes past messages.</p></div>
+    </div>
+    <p class="note">Invites need nothing extra: send someone <code>min</code> of the token and they're a member from the block the transfer is mined.</p>
+  </div>
+</section>
+
+<section aria-labelledby="ctl-h">
+  <div class="wrap">
+    <p class="eyebrow">Creator controls</p>
+    <h2 id="ctl-h">The room owner sets the terms.</h2>
+    <p class="lede">The owner (the deploy, first-mint or collection signer) publishes a signed <code>room-policy</code>. Changes apply from the block they're mined in and are never retroactive.</p>
+    <div class="grid g3">
+      <div class="card"><h3>How many tokens to enter</h3><p><code>min</code> is any amount, in raw units. It defaults to one whole token (or one collection item). Clients show it plainly: "Hold 10 $ROOM to enter".</p></div>
+      <div class="card"><h3>Hold or spend</h3><p><code>entry hold</code> (default): holding is membership and nothing is spent. <code>entry spend</code>: pay <code>spend</code> units <code>per entry</code>, <code>per message</code>, or per second, minute, hour or day while you're in the room.</p></div>
+      <div class="card"><h3>Burn or pay the owner</h3><p><code>to burn</code> (default) destroys spent tokens with a BSV-21 burn transfer. <code>to owner</code> sends them to the room owner, or <code>to &lt;address&gt;</code> to a treasury. The UI should say where they go.</p></div>
+    </div>
+    <p class="note">Owners can appoint moderators and publish signed bans. Moderation is advisory: every client applies it, and the chain stays complete.</p>
+  </div>
+</section>
+
+<section aria-labelledby="built-h">
+  <div class="wrap">
+    <p class="eyebrow">Built on what's already there</p>
+    <h2 id="built-h">A thin layer on open work.</h2>
+    <p class="lede">The bChat Protocol is a naming convention for <code>channel</code> plus a few optional MAP keys. Everything underneath already exists.</p>
+    <div class="grid g2">
+      <div class="card"><h3>bSocial and Bitcoin Schema</h3><p>Messages, likes and replies use the existing B + MAP + AIP formats. Reactions are ordinary Bitcoin Schema likes with the room keys added.</p></div>
+      <div class="card"><h3>bmap indexing</h3><p>Works today with no new indexer. bmap and the bsocial overlay already index MAP <code>message</code> and <code>like</code>, and bmap serves channels directly.</p></div>
+      <div class="card"><h3>1Sat tokens</h3><p>Rooms are 1Sat Ordinals BSV-21 tokens, BSV-20 ticks and collections. Balances and spend checks come from the 1Sat API.</p></div>
+      <div class="card"><h3>BAP</h3><p>Identity linking. Addresses attested in a BAP identity count toward a member's holding, alongside on-chain <code>address-link</code> proofs.</p></div>
+    </div>
+  </div>
+</section>
+
+<section aria-labelledby="msg-h">
+  <div class="wrap">
+    <p class="eyebrow">The message</p>
+    <h2 id="msg-h">This is the whole format.</h2>
+    <p class="lede">A room message from the spec (§6.1). Clients must ignore MAP keys they don't know.</p>
+<pre aria-label="Example room message"><code><span class="k">B</span> "Scene 12 draft is up" text/markdown utf-8
+| <span class="k">MAP</span> SET app bchat.online type message context channel
+        channel bsv21:3f9a8e…c2_0 thread 7d1c…e9
+| <span class="k">AIP</span> BITCOIN_ECDSA 1Fc3…kq H+3v…==</code></pre>
+  </div>
+</section>
+
+<section id="roadmap" aria-labelledby="road-h">
+  <div class="wrap">
+    <p class="eyebrow">Roadmap</p>
+    <h2 id="road-h">Draft for comment.</h2>
+    <div class="grid g2">
+      <div class="card"><span class="tag">Phase 2</span><h3>Encrypted rooms</h3><p>Content encrypted per epoch with AES-256-GCM, keys wrapped to current holders with BRC-78 and delivered by BRC-33 MessageBox. Keys rotate when a holder leaves or is banned. Encryption protects against outsiders and indexers, not against members.</p></div>
+      <div class="card"><span class="tag">Next</span><h3>BRC submission</h3><p>Planned: submit the spec as a BRC. The open questions are listed in §14, and comments and objections are welcome now.</p></div>
+    </div>
+  </div>
+</section>
+
+<section aria-labelledby="impl-h">
+  <div class="wrap">
+    <p class="eyebrow">Reference implementations</p>
+    <h2 id="impl-h">Where to use it.</h2>
+    <div class="grid g2">
+      <div class="card"><span class="tag">Live</span><h3>bChat</h3><p>Tokenised chat rooms at <a href="https://www.bitcoinchat.online">bitcoinchat.online</a>. Its server rooms use the same gate keys, so a server room maps one-to-one to an on-chain room.</p></div>
+      <div class="card"><span class="tag">Coming soon</span><h3>bWallet</h3><p>The mobile wallet reference implementation, in progress. The plan (§15) is on-chain posting signed with your own identity key, merged with server messages.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="final" aria-labelledby="cta-h">
+  <div class="wrap">
+    <h2 id="cta-h">Read it. Break it. Build on it.</h2>
+    <p class="lede" style="margin-bottom:28px">The spec is short and open. Questions, objections and proposals go in issues; pull requests are welcome.</p>
+    <div class="ctas">
+      <a class="btn primary" href="https://github.com/bitcoin-corp/bchat-protocol/blob/main/SPEC.md">Read the spec</a>
+      <a class="btn" href="https://github.com/bitcoin-corp/bchat-protocol/issues/new">Open an issue</a>
+      <a class="btn" href="https://www.bitcoinchat.online">Try bChat</a>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>An open protocol published by The Bitcoin Corporation Ltd · MIT</span>
+    <a href="https://github.com/bitcoin-corp/bchat-protocol">GitHub</a>
+  </div>
+</footer>
+</body>
+</html>
