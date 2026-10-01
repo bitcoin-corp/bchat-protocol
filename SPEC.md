@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Status | Draft 0.1 (2026-10-01) |
+| Status | Draft 0.2 (2026-10-01) |
 | Authors | The Bitcoin Corporation Ltd (bWallet / bChat) |
 | License | MIT |
 | Builds on | bSocial and Bitcoin Schema `message` / `like` (B + MAP + AIP), 1Sat Ordinals BSV-21, BAP |
@@ -228,12 +228,48 @@ These are signed by the owner or a moderator:
 MAP SET app <app> type room-ban    context channel channel <room id> target <address|bapID> [until <unix>] [reason <text>]
 MAP SET app <app> type room-unban  context channel channel <room id> target <address|bapID>
 MAP SET app <app> type room-policy context channel channel <room id> min <raw units> [title <text>] [history none|from-join|all]
+    [entry hold|spend] [spend <raw units>] [per entry|message|second|minute|hour|day] [to burn|owner|<address>]
 ```
 
 - A ban applies from the block it is mined in. It is not retroactive unless `retro 1` is set,
   which hides the target's earlier messages too. A ban on any linked address bans the identity.
 - `min` defaults to `10^dec` raw units (1 whole token) for BSV-21/BSV-20, or 1 item for a
   collection. This is the same as bit-sign `defaultMinRaw`.
+- **How many tokens confer entry.** `min` is set by the room creator: any amount, in raw units
+  (for example `min 1000000000` for 10 whole tokens at 8 decimals). Clients show it as whole
+  tokens ("Hold 10 $ROOM to enter").
+
+### 7.3 Entry modes and burn rates
+
+The creator also chooses whether entry costs anything beyond holding:
+
+| `entry` | Meaning |
+|---|---|
+| `hold` (default) | Holding at least `min` is membership. Nothing is spent. Leaving or selling ends membership. |
+| `spend` | Holding `min` lets you in, and you pay `spend` raw units `per` unit of use. |
+
+`spend` options:
+
+- `per entry`: pay `spend` each time you join (a single-use or per-visit ticket).
+- `per message`: pay `spend` for each message you post.
+- `per second|minute|hour|day`: a metered rate while you are in the room. The client pays in
+  batches (for example once a minute for `per second`), and stops when you leave or your balance
+  falls below `min` + one batch. Batches SHOULD be no more often than once a minute, to keep fees
+  sensible.
+- `to burn` (default): the spent tokens are destroyed with a BSV-21 burn transfer, shrinking the
+  supply. `to owner` sends them to the room owner instead, and `to <address>` to any address (a
+  treasury). A `spend` room SHOULD say plainly in its UI where spent tokens go.
+
+Verifying a `spend` room: a message from identity `I` counts only if `I` has a matching spend
+transaction for the current period (`per entry`: since joining; `per message`: referenced by the
+message's `spent <txid>` MAP key; metered: covering the message's timestamp). The spend
+transaction carries `MAP SET app <app> type room-spend context channel channel <room id>
+period <start unix> [until <unix>]`. Clients without spend support treat a `spend` room as
+`hold` and SHOULD label it "spend room (not verified here)".
+
+Changing `min`, `entry` or a rate takes effect from the block the new `room-policy` is mined in,
+and is never retroactive.
+
 - Moderation is advisory: every client applies it, and nobody can stop a banned key from writing
   to the chain. Clients MAY offer "show moderated".
 - Clients SHOULD apply the owner's actions over a moderator's, and the latest action at equal
