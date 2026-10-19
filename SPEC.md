@@ -4,7 +4,7 @@
 |---|---|
 | Status | Draft 0.2 (2026-10-01) |
 | Authors | The Bitcoin Corporation Ltd (bWallet / bChat) |
-| License | MIT |
+| License | CC BY 4.0 (earlier drafts were MIT) |
 | Builds on | bSocial and Bitcoin Schema `message` / `like` (B + MAP + AIP), 1Sat Ordinals BSV-21, BAP |
 | Reference implementations | bChat server rooms (bit-sign) and the bWallet mobile wallet (in progress) |
 

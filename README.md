@@ -9,4 +9,4 @@
 
 Status: draft for comment. Open an issue for questions, objections and proposals; pull requests welcome.
 
-Published by The Bitcoin Corporation Ltd. MIT licensed.
+Published by The Bitcoin Corporation Ltd. The specification is licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) (drafts published before this change were MIT). Reference code in the bWalletX and bChat repositories is under the Open BSV License.
